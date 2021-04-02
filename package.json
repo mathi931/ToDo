@@ -5,8 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node app.js"
+    "start": "nodemon app.js"
   },
+  "homepage": "https://github.com/mathi931/ToDo",
   "author": "",
   "license": "ISC",
   "dependencies": {
