@@ -1,10 +1,12 @@
 const express = require('express');
 const app = express();
+
 const db = require('mongoose');
 const Todo = require('./models/todoModel');
 require('dotenv/config');
 
 //MIDDLEWARES
+app.use(express.static('landingpage'));
 app.use(express.json());
 
 //CONNECT TO THE DB
@@ -25,51 +27,66 @@ db.connection
 
 //GET ALL TODOS
 app.get('/all', async (req, res) => {
+	res.setHeader('Access-Control-Allow-Origin', 'http://127.0.0.1:5500');
 	try {
 		const todos = await Todo.find();
-		res.json(todos);
+		res.send(todos);
 	} catch (err) {
-		res.json({ message: error });
+		res.send({ message: error });
 	}
 });
 
 //CREATE A TODO
-app.post('/new', async (req, res) => {
+app.post('/', async (req, res) => {
 	const toDo = new Todo({
 		title: req.body.title,
-		description: req.body.description,
 	});
 	try {
 		const savedToDo = await toDo.save();
-		res.json(savedToDo);
+
+		res.status(200).json(savedToDo);
 	} catch (error) {
-		res.json({ message: error });
+		res.status(400).json({ message: error });
 	}
 });
 
 //DELETE TO DO
-app.delete('/delete:todoId', async (req, res) => {
+app.delete('/:id', async (req, res) => {
 	try {
-		const removeToDo = await Todo.remove({ _id: req.params.todotId });
-		res.json(removeToDo);
+		const removeToDo = await Todo.deleteOne({ _id: req.params.id });
+		res.status(200).json(removeToDo);
 	} catch (error) {
-		res.json({ message: error });
+		res.status(400).json({ message: error });
 	}
 });
 
 //UPDATE TODO
-app.patch('/update:todoId', async (req, res) => {
+app.patch('/:id', async (req, res) => {
+	const id = req.params.id;
 	try {
-		const updatedToDo = await Todo.updateOne(
-			{ _id: req.params.todoId },
-			{ $set: { title: req.body.title } },
-			{ $set: { description: req.body.description } }
-		);
-		res.json(updatedToDo);
+		const response = await Todo.findByIdAndUpdate(id, req.body, {
+			new: true,
+		}).exec();
+		res.status(200).json(response);
 	} catch (error) {
-		res.json({ message: error });
+		console.log(error);
+		res.status(400).send({ message: error });
 	}
 });
+
+// router.put('/', checkIfAuthenticated, async (req, res) => {
+//     const uid = req.authId;
+
+//     try {
+//       const response = await UserColl.findByIdAndUpdate(uid, req.body, {
+//         new: true,
+//       }).exec();
+//       res.status(200).json(response);
+//     } catch (error) {
+//       console.log(error);
+//       res.status(400).json(error);
+//     }
+//   });
 //***ROUTES***//
 
 //SERVER LISTENING ON PORT:
