@@ -65,7 +65,8 @@ app.patch('/:todoId', async (req, res) => {
 	try {
 		const updatedToDo = await Todo.updateOne(
 			{ _id: req.params.todoId },
-			{ $set: { title: req.body.title } }
+			{ $set: { title: req.body.title } },
+			{ $set: { description: req.body.description } }
 		);
 		res.json(updatedToDo);
 	} catch (error) {
