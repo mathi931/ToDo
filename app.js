@@ -51,7 +51,7 @@ app.post('/new', async (req, res) => {
 });
 
 //DELETE TO DO
-app.delete('/:todoId', async (req, res) => {
+app.delete('/delete:todoId', async (req, res) => {
 	try {
 		const removeToDo = await Todo.remove({ _id: req.params.todotId });
 		res.json(removeToDo);
@@ -61,7 +61,7 @@ app.delete('/:todoId', async (req, res) => {
 });
 
 //UPDATE TODO
-app.patch('/:todoId', async (req, res) => {
+app.patch('/update:todoId', async (req, res) => {
 	try {
 		const updatedToDo = await Todo.updateOne(
 			{ _id: req.params.todoId },
