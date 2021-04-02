@@ -6,7 +6,7 @@ const Todo = require('./models/todoModel');
 require('dotenv/config');
 
 //MIDDLEWARES
-app.use(express.static('landingpage'));
+// app.use(express.static('landingpage'));
 app.use(express.json());
 
 //CONNECT TO THE DB
@@ -26,13 +26,13 @@ db.connection
 //***ROUTES***//
 
 //GET ALL TODOS
-app.get('/all', async (req, res) => {
+app.get('/', async (req, res) => {
 	res.setHeader('Access-Control-Allow-Origin', 'http://127.0.0.1:5500');
 	try {
 		const todos = await Todo.find();
-		res.send(todos);
+		res.status(200).json(todos);
 	} catch (err) {
-		res.send({ message: error });
+		res.status(400).json({ message: error });
 	}
 });
 

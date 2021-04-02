@@ -10,6 +10,7 @@ const ToDoSchema = new db.Schema({
 		type: Boolean,
 		default: false,
 	},
-});
+	
+},{versionKey: false});
 
 module.exports = db.model('Todos', ToDoSchema);

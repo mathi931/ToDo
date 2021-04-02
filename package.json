@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon app.js"
+    "start": "nodemon config.js"
   },
   "homepage": "https://github.com/mathi931/ToDo",
   "author": "",
