@@ -1,14 +1,11 @@
 const express = require('express');
 const app = express();
-const cors = require('cors');
-const router = express.Router();
 const db = require('mongoose');
 const Todo = require('./models/todoModel');
 require('dotenv/config');
 
 //MIDDLEWARES
-app.use(cors());
-app.use('/', express.json());
+app.use(express.json());
 
 //CONNECT TO THE DB
 db.connect(process.env.DB_CON, {
