@@ -3,6 +3,7 @@ const todoInput = document.querySelector('.todo-input');
 const todoButton = document.querySelector('.todo-button');
 const todoList = document.querySelector('.todo-list');
 const filterOption = document.querySelector('.filter-todo');
+const mainText = document.getElementById('main-text');
 
 //Event Listeners
 document.addEventListener('DOMContentLoaded', getTodos);
@@ -92,13 +93,13 @@ async function deleteTodo(e) {
 	if (item.classList[0] === 'complete-btn') {
 		const todo = item.parentElement;
 
-		if (todo.classList[1] == null) {
+		if (todo.classList[2] == null) {
 			await fetch(targetUrl, {
 				method: 'PATCH', // or 'PUT'
 				headers: {
 					'Content-Type': 'application/json',
 				},
-				body: JSON.stringify({done: true}),
+				body: JSON.stringify({ done: true }),
 			})
 				.then((response) => response.json())
 				.then((data) => {
@@ -108,13 +109,13 @@ async function deleteTodo(e) {
 					console.error('Error:', error);
 				});
 			todo.classList.add('completed');
-		} else if (todo.classList[1] != null) {
+		} else if (todo.classList[2] != null) {
 			await fetch(targetUrl, {
 				method: 'PATCH',
 				headers: {
 					'Content-Type': 'application/json',
 				},
-				body: JSON.stringify({done: false}),
+				body: JSON.stringify({ done: false }),
 			})
 				.then((response) => response.json())
 				.then((data) => {
@@ -124,6 +125,75 @@ async function deleteTodo(e) {
 					console.error('Error:', error);
 				});
 			todo.classList.remove('completed');
+		}
+	}
+
+	if (item.classList.contains('todo') || item.classList.contains('todo-item')) {
+		let target = item.parentElement;
+
+		if (target.classList.contains('normal')) {
+			target.className = target.className.replace(
+				/(?:^|\s)normal(?!\S)/g,
+				' important'
+			);
+			await fetch(targetUrl, {
+				method: 'PATCH',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ difficulty: 'important' }),
+			})
+				.then((response) => response.json())
+				.then((data) => {
+					console.log('Success:', data);
+				})
+				.catch((error) => {
+					console.error('Error:', error);
+				});
+
+			console.log(target);
+		} else if (target.classList.contains('important')) {
+			target.className = target.className.replace(
+				/(?:^|\s)important(?!\S)/g,
+				' not-important'
+			);
+			await fetch(targetUrl, {
+				method: 'PATCH',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ difficulty: 'not-important' }),
+			})
+				.then((response) => response.json())
+				.then((data) => {
+					console.log('Success:', data);
+				})
+				.catch((error) => {
+					console.error('Error:', error);
+				});
+
+			console.log(target);
+		} else if (target.classList.contains('not-important')) {
+			target.className = target.className.replace(
+				/(?:^|\s)not-important(?!\S)/g,
+				' normal'
+			);
+			await fetch(targetUrl, {
+				method: 'PATCH',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ difficulty: 'normal' }),
+			})
+				.then((response) => response.json())
+				.then((data) => {
+					console.log('Success:', data);
+				})
+				.catch((error) => {
+					console.error('Error:', error);
+				});
+
+			console.log(target);
 		}
 	}
 }
@@ -154,6 +224,9 @@ function filterTodo(e) {
 
 async function getTodos(e) {
 	e.preventDefault();
+	//ask for he name
+	//mainText.innerHTML = window.prompt('Your Name', 'Jason');
+
 	fetch('http://localhost:3000/', {
 		method: 'GET',
 	})
@@ -164,10 +237,21 @@ async function getTodos(e) {
 				todos.push(el);
 				//Create todo div
 				const todoDiv = document.createElement('div');
-				todoDiv.classList.add('todo');
+				todoDiv.classList.add('todo', 'normal');
 				todoDiv.id = el._id;
-				if(el.done == true && todoDiv.classList[1] == null ){
-					todoDiv.classList.add('completed')
+				if (el.done == true && todoDiv.classList[2] == null) {
+					todoDiv.classList.add('completed');
+				}
+				if (el.difficulty == 'important') {
+					todoDiv.className = todoDiv.className.replace(
+						/(?:^|\s)normal(?!\S)/g,
+						' important'
+					);
+				} else if (el.difficulty == 'not-important') {
+					todoDiv.className = todoDiv.className.replace(
+						/(?:^|\s)normal(?!\S)/g,
+						' not-important'
+					);
 				}
 				//Create list
 				const newTodo = document.createElement('li');
@@ -175,6 +259,11 @@ async function getTodos(e) {
 				newTodo.classList.add('todo-item');
 				todoDiv.appendChild(newTodo);
 				todoInput.value = '';
+				//create a time div
+				const timeDiv = document.createElement('div');
+				timeDiv.classList.add('time-div');
+				timeDiv.innerHTML = formatDate(Date.parse(el.datum));
+				todoDiv.appendChild(timeDiv);
 				//Create Completed Button
 				const completedButton = document.createElement('button');
 				completedButton.innerHTML = `<i class="fas fa-check"></i>`;
@@ -193,4 +282,12 @@ async function getTodos(e) {
 			console.error('Error:', error);
 		});
 	console.log(todos);
+}
+function formatDate(d) {
+	let mo = new Intl.DateTimeFormat('en', { month: 'short' }).format(d);
+	let da = new Intl.DateTimeFormat('en', { weekday: 'short' }).format(d);
+	let ho = new Intl.DateTimeFormat('en', { hour: 'numeric' }).format(d);
+	let mi = new Intl.DateTimeFormat('en', { minute: '2-digit' }).format(d);
+	let newDate = `${da}, ${ho}`;
+	return newDate;
 }

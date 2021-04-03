@@ -10,7 +10,14 @@ const ToDoSchema = new db.Schema({
 		type: Boolean,
 		default: false,
 	},
-	
+	datum:{
+		type: Date,
+		default: Date.now,
+	},
+	difficulty:{
+		type: String,
+		default: 'normal',
+	}
 },{versionKey: false});
 
 module.exports = db.model('Todos', ToDoSchema);
