@@ -67,7 +67,6 @@ async function addTodo(e) {
 
 async function deleteTodo(e) {
 	const item = e.target;
-	console.log(item.parentElement);
 	const targetUrl = url + item.parentElement.id;
 	if (item.classList[0] === 'trash-btn') {
 		// e.target.parentElement.remove();
@@ -94,14 +93,12 @@ async function deleteTodo(e) {
 		const todo = item.parentElement;
 
 		if (todo.classList[1] == null) {
-			const data = { done: true };
-
 			await fetch(targetUrl, {
 				method: 'PATCH', // or 'PUT'
 				headers: {
 					'Content-Type': 'application/json',
 				},
-				body: JSON.stringify(data),
+				body: JSON.stringify({done: true}),
 			})
 				.then((response) => response.json())
 				.then((data) => {
@@ -112,14 +109,12 @@ async function deleteTodo(e) {
 				});
 			todo.classList.add('completed');
 		} else if (todo.classList[1] != null) {
-			const data = { done: false };
-
 			await fetch(targetUrl, {
-				method: 'PATCH', // or 'PUT'
+				method: 'PATCH',
 				headers: {
 					'Content-Type': 'application/json',
 				},
-				body: JSON.stringify(data),
+				body: JSON.stringify({done: false}),
 			})
 				.then((response) => response.json())
 				.then((data) => {
@@ -159,7 +154,6 @@ function filterTodo(e) {
 
 async function getTodos(e) {
 	e.preventDefault();
-	console.log(e.target);
 	fetch('http://localhost:3000/', {
 		method: 'GET',
 	})
