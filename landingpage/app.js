@@ -166,6 +166,9 @@ async function getTodos(e) {
 				const todoDiv = document.createElement('div');
 				todoDiv.classList.add('todo');
 				todoDiv.id = el._id;
+				if(el.done == true && todoDiv.classList[1] == null ){
+					todoDiv.classList.add('completed')
+				}
 				//Create list
 				const newTodo = document.createElement('li');
 				newTodo.innerText = el.title;

@@ -59,7 +59,7 @@
     transition: all 1s ease;
   }
   .filter-todo {
-    padding: 1rem;
+    padding: 1.05rem;
   }
   .todo li {
     flex: 1;
