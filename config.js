@@ -29,7 +29,6 @@ db.connection
 
 //GET ALL TODOS
 app.get('/', async (req, res) => {
-	res.setHeader('Access-Control-Allow-Origin', 'http://127.0.0.1:5500');
 	try {
 		const todos = await Todo.find();
 		res.status(200).json(todos);
@@ -40,7 +39,6 @@ app.get('/', async (req, res) => {
 
 //CREATE A TODO
 app.post('/', async (req, res) => {
-	res.setHeader('Access-Control-Allow-Origin', 'http://127.0.0.1:5500');
 	const toDo = new Todo({
 		title: req.body.title,
 	});
@@ -66,6 +64,7 @@ app.delete('/:id', async (req, res) => {
 //UPDATE TODO
 app.patch('/:id', async (req, res) => {
 	const id = req.params.id;
+	console.log(id);
 	try {
 		const response = await Todo.findByIdAndUpdate(id, req.body, {
 			new: true,

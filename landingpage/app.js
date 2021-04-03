@@ -15,7 +15,6 @@ let todos = [];
 //url
 let url = 'http://localhost:3000/';
 
-
 //Functions
 
 async function addTodo(e) {
@@ -28,23 +27,23 @@ async function addTodo(e) {
 	const newTodo = document.createElement('li');
 	newTodo.innerText = todoInput.value;
 	//prepare the request body
-	let data = { title: `${newTodo.innerText}`};
-	//send a post request 
+	let data = { title: `${newTodo.innerText}` };
+	//send a post request
 	await fetch(url, {
 		method: 'POST', // or 'PUT'
 		headers: {
-		  'Content-Type': 'application/json',
+			'Content-Type': 'application/json',
 		},
 		body: JSON.stringify(data),
-	  })
-	  .then(response => response.json())
-	  .then(data => {
-		todos.push(data);
-		todoDiv.id = data._id;
-	  })
-	  .catch((error) => {
-		console.error('Error:', error);
-	  });
+	})
+		.then((response) => response.json())
+		.then((data) => {
+			todos.push(data);
+			todoDiv.id = data._id;
+		})
+		.catch((error) => {
+			console.error('Error:', error);
+		});
 	//Save to local - do this last
 	//Save to local
 	//saveLocalTodos(todoInput.value);
@@ -64,14 +63,12 @@ async function addTodo(e) {
 	todoDiv.appendChild(trashButton);
 	//attach final Todo
 	todoList.appendChild(todoDiv);
-
-	
 }
 
 async function deleteTodo(e) {
 	const item = e.target;
-	const targetUrl = url+item.parentElement.id;
-	console.log(targetUrl);
+	console.log(item.parentElement);
+	const targetUrl = url + item.parentElement.id;
 	if (item.classList[0] === 'trash-btn') {
 		// e.target.parentElement.remove();
 		const todo = item.parentElement;
@@ -79,15 +76,15 @@ async function deleteTodo(e) {
 		//at the end
 		//removeLocalTodos(todo);
 		await fetch(targetUrl, {
-			method: 'DELETE'
-		  })
-		  .then(response => response.json())
-		  .then(data => {
-			console.log(data);
-		  })
-		  .catch((error) => {
-			console.error('Error:', error);
-		  });
+			method: 'DELETE',
+		})
+			.then((response) => response.json())
+			.then((data) => {
+				//console.log(data);
+			})
+			.catch((error) => {
+				console.error('Error:', error);
+			});
 
 		todo.addEventListener('transitionend', (e) => {
 			todo.remove();
@@ -95,8 +92,44 @@ async function deleteTodo(e) {
 	}
 	if (item.classList[0] === 'complete-btn') {
 		const todo = item.parentElement;
-		todo.classList.toggle('completed');
-		console.log(todo);
+
+		if (todo.classList[1] == null) {
+			const data = { done: true };
+
+			await fetch(targetUrl, {
+				method: 'PATCH', // or 'PUT'
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(data),
+			})
+				.then((response) => response.json())
+				.then((data) => {
+					console.log('Success:', data);
+				})
+				.catch((error) => {
+					console.error('Error:', error);
+				});
+			todo.classList.add('completed');
+		} else if (todo.classList[1] != null) {
+			const data = { done: false };
+
+			await fetch(targetUrl, {
+				method: 'PATCH', // or 'PUT'
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(data),
+			})
+				.then((response) => response.json())
+				.then((data) => {
+					console.log('Success:', data);
+				})
+				.catch((error) => {
+					console.error('Error:', error);
+				});
+			todo.classList.remove('completed');
+		}
 	}
 }
 
@@ -124,31 +157,9 @@ function filterTodo(e) {
 	});
 }
 
-function saveLocalTodos(todo) {
-	let todos;
-	if (localStorage.getItem('todos') === null) {
-		todos = [];
-	} else {
-		todos = JSON.parse(localStorage.getItem('todos'));
-	}
-	todos.push(todo);
-	localStorage.setItem('todos', JSON.stringify(todos));
-}
-function removeLocalTodos(todo) {
-	let todos;
-	if (localStorage.getItem('todos') === null) {
-		todos = [];
-	} else {
-		todos = JSON.parse(localStorage.getItem('todos'));
-	}
-	const todoIndex = todo.children[0].innerText;
-	todos.splice(todos.indexOf(todoIndex), 1);
-	localStorage.setItem('todos', JSON.stringify(todos));
-}
-
 async function getTodos(e) {
-
 	e.preventDefault();
+	console.log(e.target);
 	fetch('http://localhost:3000/', {
 		method: 'GET',
 	})
@@ -184,5 +195,5 @@ async function getTodos(e) {
 		.catch((error) => {
 			console.error('Error:', error);
 		});
-		console.log(todos);
+	console.log(todos);
 }
