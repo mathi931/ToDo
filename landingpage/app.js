@@ -4,23 +4,42 @@ const todoButton = document.querySelector('.todo-button');
 const todoList = document.querySelector('.todo-list');
 const filterOption = document.querySelector('.filter-todo');
 const mainText = document.getElementById('main-text');
+const resetButton = document.getElementById('reset-button');
 
 //Event Listeners
 document.addEventListener('DOMContentLoaded', getTodos);
 todoButton.addEventListener('click', addTodo);
 todoList.addEventListener('click', deleteTodo);
 filterOption.addEventListener('click', filterTodo);
-
+resetButton.addEventListener('click', resetX);
+//username
+let userName = '';
 //Todo list
 let todos = [];
 //url
 let url = 'http://localhost:3000/';
 
 //Functions
+//RESET
+async function resetX(){
+	localStorage.removeItem("user");
+	await fetch(url, {
+		method: 'DELETE',
+	})
+		.then((response) => response.json())
+		.then((data) => {
+			console.log(data);
+		})
+		.catch((error) => {
+			console.error('Error:', error);
+		});
+}
 
+//CREATE
 async function addTodo(e) {
 	//Prevent natural behaviour
 	e.preventDefault();
+	location.reload();
 	//Create todo div
 	const todoDiv = document.createElement('div');
 	todoDiv.classList.add('todo');
@@ -150,8 +169,7 @@ async function deleteTodo(e) {
 				.catch((error) => {
 					console.error('Error:', error);
 				});
-
-			console.log(target);
+				console.log(target);
 		} else if (target.classList.contains('important')) {
 			target.className = target.className.replace(
 				/(?:^|\s)important(?!\S)/g,
@@ -171,8 +189,7 @@ async function deleteTodo(e) {
 				.catch((error) => {
 					console.error('Error:', error);
 				});
-
-			console.log(target);
+				console.log(target);
 		} else if (target.classList.contains('not-important')) {
 			target.className = target.className.replace(
 				/(?:^|\s)not-important(?!\S)/g,
@@ -192,8 +209,7 @@ async function deleteTodo(e) {
 				.catch((error) => {
 					console.error('Error:', error);
 				});
-
-			console.log(target);
+				console.log(target);
 		}
 	}
 }
@@ -224,8 +240,15 @@ function filterTodo(e) {
 
 async function getTodos(e) {
 	e.preventDefault();
-	//ask for he name
-	//mainText.innerHTML = window.prompt('Your Name', 'Jason');
+	//get name
+
+	if (!localStorage.getItem('user')) {
+		mainText.innerHTML = window.prompt('Whats your name?', 'Jason');
+		localStorage.setItem('user', mainText.innerHTML);
+		console.log(localStorage.getItem('user'));
+	} else {
+		mainText.innerHTML = localStorage.getItem('user');
+	}
 
 	fetch('http://localhost:3000/', {
 		method: 'GET',
@@ -290,4 +313,20 @@ function formatDate(d) {
 	let mi = new Intl.DateTimeFormat('en', { minute: '2-digit' }).format(d);
 	let newDate = `${da}, ${ho}`;
 	return newDate;
+}
+
+function checkUser() {
+	if (!localStorage.getItem('user')) {
+		mainText.innerHTML = localStorage.setItem(
+			'user',
+			window.prompt('Whats your name?', 'Jason')
+		);
+	} else if (
+		localStorage.getItem('user') &&
+		localStorage.getItem('user') == u
+	) {
+		mainText.innerHTML = u;
+	} else {
+		console.log('JEEEEZZZ');
+	}
 }

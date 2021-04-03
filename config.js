@@ -60,6 +60,15 @@ app.delete('/:id', async (req, res) => {
 		res.status(400).json({ message: error });
 	}
 });
+//DELETE ALL
+app.delete('/', async (req, res) => {
+	try {
+		const removeToDo = await Todo.deleteMany({ });
+		res.status(200).json(removeToDo);
+	} catch (error) {
+		res.status(400).json({ message: error });
+	}
+});
 
 //UPDATE TODO
 app.patch('/:id', async (req, res) => {
