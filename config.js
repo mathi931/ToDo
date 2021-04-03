@@ -3,11 +3,13 @@ const app = express();
 
 const db = require('mongoose');
 const Todo = require('./models/todoModel');
+const cors = require('cors');
 require('dotenv/config');
 
 //MIDDLEWARES
 // app.use(express.static('landingpage'));
 app.use(express.json());
+app.use(cors());
 
 //CONNECT TO THE DB
 db.connect(process.env.DB_CON, {
@@ -38,6 +40,7 @@ app.get('/', async (req, res) => {
 
 //CREATE A TODO
 app.post('/', async (req, res) => {
+	res.setHeader('Access-Control-Allow-Origin', 'http://127.0.0.1:5500');
 	const toDo = new Todo({
 		title: req.body.title,
 	});
