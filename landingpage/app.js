@@ -1,28 +1,29 @@
-//Select DOM
-const todoInput = document.querySelector('.todo-input');
-const todoButton = document.querySelector('.todo-button');
-const todoList = document.querySelector('.todo-list');
-const filterOption = document.querySelector('.filter-todo');
-const mainText = document.getElementById('main-text');
-const resetButton = document.getElementById('reset-button');
+//**DOMS**\\
+const inputNewTodo = document.querySelector('.todo-input');
+const buttonAddTodo = document.querySelector('.todo-button');
+const buttonReset = document.getElementById('reset-button');
+const dropDownFilter = document.querySelector('.filter-todo');
+const listTodos = document.querySelector('.todo-list');
+const textUser = document.getElementById('main-text');
 
-//Event Listeners
-document.addEventListener('DOMContentLoaded', getTodos);
-todoButton.addEventListener('click', addTodo);
-todoList.addEventListener('click', deleteTodo);
-filterOption.addEventListener('click', filterTodo);
-resetButton.addEventListener('click', resetX);
-//username
-let userName = '';
-//Todo list
-let todos = [];
-//url
-let url = 'http://localhost:3000/';
+//**EVENTS**\\
+document.addEventListener('DOMContentLoaded', loadTodoList);
+buttonAddTodo.addEventListener('click', addTodo);
+buttonReset.addEventListener('click', resetX);
+listTodos.addEventListener('click', controlTodo);
+dropDownFilter.addEventListener('click', filterTodo);
 
-//Functions
-//RESET
-async function resetX(){
-	localStorage.removeItem("user");
+//**LOCAL VARIABLES**\\
+let todos = []; //local list
+let url = 'http://localhost:3000/'; //url
+
+//**EVENT FUNCTIONS**\\
+
+//delete all data
+async function resetX() {
+	localStorage.removeItem('user'); //removes user from local storage
+
+	//send a delete request to the server
 	await fetch(url, {
 		method: 'DELETE',
 	})
@@ -35,187 +36,112 @@ async function resetX(){
 		});
 }
 
-//CREATE
+//create a todo
 async function addTodo(e) {
 	//Prevent natural behaviour
 	e.preventDefault();
+	//reload the page -- without reloading have some bugs
 	location.reload();
+
 	//Create todo div
 	const todoDiv = document.createElement('div');
 	todoDiv.classList.add('todo');
+
 	//Create list
 	const newTodo = document.createElement('li');
-	newTodo.innerText = todoInput.value;
-	//prepare the request body
-	let data = { title: `${newTodo.innerText}` };
-	//send a post request
-	await fetch(url, {
-		method: 'POST', // or 'PUT'
-		headers: {
-			'Content-Type': 'application/json',
-		},
-		body: JSON.stringify(data),
-	})
-		.then((response) => response.json())
-		.then((data) => {
-			todos.push(data);
-			todoDiv.id = data._id;
-		})
-		.catch((error) => {
-			console.error('Error:', error);
-		});
-	//Save to local - do this last
-	//Save to local
-	//saveLocalTodos(todoInput.value);
-	//
+	newTodo.innerText = inputNewTodo.value;
+
+	//request to server
+	await newTodoRequest(todoDiv,newTodo);
+
 	newTodo.classList.add('todo-item');
 	todoDiv.appendChild(newTodo);
-	todoInput.value = '';
+	inputNewTodo.value = '';
+
 	//Create Completed Button
 	const completedButton = document.createElement('button');
 	completedButton.innerHTML = `<i class="fas fa-check"></i>`;
 	completedButton.classList.add('complete-btn');
 	todoDiv.appendChild(completedButton);
+
 	//Create trash button
 	const trashButton = document.createElement('button');
 	trashButton.innerHTML = `<i class="fas fa-trash"></i>`;
 	trashButton.classList.add('trash-btn');
 	todoDiv.appendChild(trashButton);
+
 	//attach final Todo
-	todoList.appendChild(todoDiv);
+	listTodos.appendChild(todoDiv);
 }
 
-async function deleteTodo(e) {
+function controlTodo(e) {
 	const item = e.target;
 	const targetUrl = url + item.parentElement.id;
+
+	//click event on delete button
 	if (item.classList[0] === 'trash-btn') {
-		// e.target.parentElement.remove();
+
 		const todo = item.parentElement;
 		todo.classList.add('fall');
-		//at the end
-		//removeLocalTodos(todo);
-		await fetch(targetUrl, {
-			method: 'DELETE',
-		})
-			.then((response) => response.json())
-			.then((data) => {
-				//console.log(data);
-			})
-			.catch((error) => {
-				console.error('Error:', error);
-			});
+
+		//remove todo ;
+		deleteTodoRequest(targetUrl);
 
 		todo.addEventListener('transitionend', (e) => {
-			todo.remove();
+			todo.remove(e);
 		});
 	}
+
+	//--click event on complete button
 	if (item.classList[0] === 'complete-btn') {
 		const todo = item.parentElement;
 
+		//toggle for completed
 		if (todo.classList[2] == null) {
-			await fetch(targetUrl, {
-				method: 'PATCH', // or 'PUT'
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({ done: true }),
-			})
-				.then((response) => response.json())
-				.then((data) => {
-					console.log('Success:', data);
-				})
-				.catch((error) => {
-					console.error('Error:', error);
-				});
+			switchComplete(targetUrl, true)
 			todo.classList.add('completed');
 		} else if (todo.classList[2] != null) {
-			await fetch(targetUrl, {
-				method: 'PATCH',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({ done: false }),
-			})
-				.then((response) => response.json())
-				.then((data) => {
-					console.log('Success:', data);
-				})
-				.catch((error) => {
-					console.error('Error:', error);
-				});
+			switchComplete(targetUrl, false)
 			todo.classList.remove('completed');
 		}
 	}
 
+	//--click to change importance
 	if (item.classList.contains('todo') || item.classList.contains('todo-item')) {
 		let target = item.parentElement;
-
+		//if normal change to important 
 		if (target.classList.contains('normal')) {
 			target.className = target.className.replace(
 				/(?:^|\s)normal(?!\S)/g,
 				' important'
 			);
-			await fetch(targetUrl, {
-				method: 'PATCH',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({ difficulty: 'important' }),
-			})
-				.then((response) => response.json())
-				.then((data) => {
-					console.log('Success:', data);
-				})
-				.catch((error) => {
-					console.error('Error:', error);
-				});
-				console.log(target);
+			switchImportance(targetUrl, 'important')
+			//test target
+			console.log(target);
+		//if important change to not important 
 		} else if (target.classList.contains('important')) {
 			target.className = target.className.replace(
 				/(?:^|\s)important(?!\S)/g,
 				' not-important'
 			);
-			await fetch(targetUrl, {
-				method: 'PATCH',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({ difficulty: 'not-important' }),
-			})
-				.then((response) => response.json())
-				.then((data) => {
-					console.log('Success:', data);
-				})
-				.catch((error) => {
-					console.error('Error:', error);
-				});
-				console.log(target);
+			switchImportance(targetUrl, 'not-important')
+			//test target
+			console.log(target);
+		//if its not important change it to normal
 		} else if (target.classList.contains('not-important')) {
 			target.className = target.className.replace(
 				/(?:^|\s)not-important(?!\S)/g,
 				' normal'
 			);
-			await fetch(targetUrl, {
-				method: 'PATCH',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({ difficulty: 'normal' }),
-			})
-				.then((response) => response.json())
-				.then((data) => {
-					console.log('Success:', data);
-				})
-				.catch((error) => {
-					console.error('Error:', error);
-				});
-				console.log(target);
+			switchImportance(targetUrl, 'normal')
+			//test target
+			console.log(target);
 		}
 	}
 }
 
 function filterTodo(e) {
-	const todos = todoList.childNodes;
+	const todos = listTodos.childNodes;
 	todos.forEach(function (todo) {
 		switch (e.target.value) {
 			case 'all':
@@ -238,19 +164,19 @@ function filterTodo(e) {
 	});
 }
 
-async function getTodos(e) {
+async function loadTodoList(e) {
 	e.preventDefault();
-	//get name
 
+	//get and set the name, store it locally
 	if (!localStorage.getItem('user')) {
-		mainText.innerHTML = window.prompt('Whats your name?', 'Jason');
-		localStorage.setItem('user', mainText.innerHTML);
+		textUser.innerHTML = window.prompt('Whats your name?', 'Jason');
+		localStorage.setItem('user', textUser.innerHTML);
 		console.log(localStorage.getItem('user'));
 	} else {
-		mainText.innerHTML = localStorage.getItem('user');
+		textUser.innerHTML = localStorage.getItem('user');
 	}
-
-	fetch('http://localhost:3000/', {
+	//get all the data on load.
+	await fetch('http://localhost:3000/', {
 		method: 'GET',
 	})
 		.then((response) => response.json())
@@ -281,7 +207,7 @@ async function getTodos(e) {
 				newTodo.innerText = el.title;
 				newTodo.classList.add('todo-item');
 				todoDiv.appendChild(newTodo);
-				todoInput.value = '';
+				inputNewTodo.value = '';
 				//create a time div
 				const timeDiv = document.createElement('div');
 				timeDiv.classList.add('time-div');
@@ -298,7 +224,7 @@ async function getTodos(e) {
 				trashButton.classList.add('trash-btn');
 				todoDiv.appendChild(trashButton);
 				//attach final Todo
-				todoList.appendChild(todoDiv);
+				listTodos.appendChild(todoDiv);
 			});
 		})
 		.catch((error) => {
@@ -306,6 +232,75 @@ async function getTodos(e) {
 		});
 	console.log(todos);
 }
+
+//**OTHER FUNCTIONS**\\
+//requests
+async function newTodoRequest(todoDiv, newTodo) {
+	//prepare the request body
+	let data = { title: `${newTodo.innerText}` };
+	//send a post request for create a new todo
+	await fetch(url, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify(data),
+	})
+		.then((response) => response.json())
+		.then((data) => {
+			todos.push(data);
+			todoDiv.id = data._id;
+		})
+		.catch((error) => {
+			console.error('Error:', error);
+		});
+}
+async function deleteTodoRequest(targetUrl) {
+	fetch(targetUrl, {
+		method: 'DELETE',
+	})
+		.then((response) => response.json())
+		.then((data) => {
+			console.log(data);
+		})
+		.catch((error) => {
+			console.error('Error:', error);
+		});
+}
+function switchComplete(targetUrl, bool) {
+	let bodyString = { done: `${bool}` };
+	fetch(targetUrl, {
+		method: 'PATCH',
+		headers: {
+			'Content-Type': 'application/json;charset=utf-8',
+		},
+		body: JSON.stringify(bodyString),
+	})
+		.then((response) => response.json())
+		.then((data) => {
+			console.log('Success:', data);
+		})
+		.catch((error) => {
+			console.error('Error:', error);
+		});
+}
+function switchImportance(targetUrl, importance){
+	fetch(targetUrl, {
+		method: 'PATCH',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({ difficulty: `${importance}` }),
+	})
+		.then((response) => response.json())
+		.then((data) => {
+			console.log('Success:', data);
+		})
+		.catch((error) => {
+			console.error('Error:', error);
+		});
+}
+//format the input date
 function formatDate(d) {
 	let mo = new Intl.DateTimeFormat('en', { month: 'short' }).format(d);
 	let da = new Intl.DateTimeFormat('en', { weekday: 'short' }).format(d);
@@ -313,20 +308,4 @@ function formatDate(d) {
 	let mi = new Intl.DateTimeFormat('en', { minute: '2-digit' }).format(d);
 	let newDate = `${da}, ${ho}`;
 	return newDate;
-}
-
-function checkUser() {
-	if (!localStorage.getItem('user')) {
-		mainText.innerHTML = localStorage.setItem(
-			'user',
-			window.prompt('Whats your name?', 'Jason')
-		);
-	} else if (
-		localStorage.getItem('user') &&
-		localStorage.getItem('user') == u
-	) {
-		mainText.innerHTML = u;
-	} else {
-		console.log('JEEEEZZZ');
-	}
 }
